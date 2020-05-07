@@ -1,0 +1,6 @@
+image: 115.146.92.24:5000/comp30023/p2:latest
+test:
+    script:
+        - /test.sh
+variables:
+    GIT_STRATEGY: clone
