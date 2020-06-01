@@ -170,7 +170,7 @@ main(int argc, char *argv[]){
     printf("Throughput %lld, %lld, %lld\n", average, min, max);
     printf("Turnaround time %lld\n", average_turnaround_time);
     printf("Time overhead %.2f %.2f\n",max_individual_turnaround,average_individual_turnaround_time);
-    printf("Makespan: %lld\n", finish_at);
+    printf("Makespan %lld\n", finish_at);
     return 0;
 }
 
