@@ -349,7 +349,7 @@ run_p_on_ff_algorithm(list_t *process_input, long long int memory_size, statisti
                     remain_page = remain_page-page_need; 
                     //calculate the memory take up percentage
                     //memory_take_up_per = ((double)page_need/memory_page)*100; 
-                    memory_take_up_per = ((double)(memory_page-remain_page)/memory_page)*100; //this is (2)
+                    memory_take_up_per = ceil(((double)(memory_page-remain_page)/memory_page)*100); //this is (2)
                 }else{
                     printf("The memory is empty but there is still no space for the process!\n");
                 } 
@@ -564,7 +564,7 @@ run_p_on_rr_algorithm(list_t *process_input,long long int memory_size, long long
                 // I am not sure the precentage is of the process take how much of the whole memory(1)
                 // or of how much taked up memory out of the whole memory(2), take (1) at here, can change later
                 //memory_take_up_per = ((double)page_need/memory_page)*100; //this is (1)
-                memory_take_up_per = ((double)(memory_page-remain_page)/memory_page)*100; //this is (2)
+                memory_take_up_per =  ceil(((double)(memory_page-remain_page)/memory_page)*100); //this is (2)
                 printf("%lld, RUNNING, id=%lld, remaining-time=%lld, load-time=%lld, mem-usage=%d%%, mem-addresses=", simulator_timer, curr_process->process_id, curr_process->remain_time, curr_process->load_time, memory_take_up_per);
                 //printf("something wrong happened here!!!!\n"); 
                 print_take_up_page(curr_process->take_up_page, curr_process->page_num);
