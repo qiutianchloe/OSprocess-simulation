@@ -1,3 +1,0 @@
-report first attempt
-I used the shortest job first algorithm for cs
-and used the least frequency used algorithm for cm

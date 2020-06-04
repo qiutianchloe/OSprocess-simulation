@@ -62,7 +62,7 @@ long long int run_rr_algorithm(list_t *process_input, long long int quantum, sta
 long long int run_p_on_ff_algorithm(list_t *process_input,long long int memory_size, statistic_t *statistics);
 long long int run_p_on_rr_algorithm(list_t *process_input,long long int memory_size, long long int quantum, statistic_t *statistics);
 long long int run_v_on_rr_algorithm(list_t *process_input,long long int memory_size, long long int quantum, statistic_t *statistics);
-long long int run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, long long int quantum, statistic_t *statistics);
+long long int run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, statistic_t *statistics);
 long long int run_cm_on_rr_algorithm(list_t *process_input,long long int memory_size, long long int quantum, statistic_t *statistics);
 long long int check_arrival(long long int simulator_timer, list_t *process_input, list_t *to_do_list, long long int num_processes_arrived);
 node_t *find_least_rec_pro(list_t *to_do_list);
@@ -107,7 +107,6 @@ main(int argc, char *argv[]){
     char* cmd_arg[5];
     cmd_arg[4] = NULL;
     read_in_cmd(argv, argc, cmd_arg);
-
     /*read in the file*/
     list_t *process_input = make_empty_list(); 
     if(strcmp(cmd_arg[1], "rr")==0){
@@ -145,7 +144,7 @@ main(int argc, char *argv[]){
 
     }else if(strcmp(cmd_arg[1], "cs")==0 && strcmp(cmd_arg[2], "v")==0){
 
-        finish_at=run_v_on_cs_algorithm(process_input,atoi(cmd_arg[3]),atoi(cmd_arg[4]),statistics);
+        finish_at=run_v_on_cs_algorithm(process_input,atoi(cmd_arg[3]),statistics);
 
     }else if(strcmp(cmd_arg[1], "rr")==0 && strcmp(cmd_arg[2], "cm")==0){
 
@@ -868,8 +867,9 @@ run_v_on_rr_algorithm(list_t *process_input,long long int memory_size, long long
 }
 
 long long int 
-run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, long long int quantum, statistic_t *statistics){
-        long long int interval = 0; 
+run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, statistic_t *statistics){
+    printf("error happened\n");
+    long long int interval = 0; 
     long long int simulator_timer = 0; 
     //remain page also equal total memory page minus empty_space_start. 
     //or total memory=empty_space_start+remain_page
@@ -896,13 +896,12 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, long long
         //keep eye on the arriving process
         num_processes_arrived = check_arrival(simulator_timer, process_input, to_do_list, num_processes_arrived);
 
-        if(curr_process!=NULL && curr_process->remain_time!=0 && curr_process->quantum!=0 && curr_process->load_time!=0){
+        if(curr_process!=NULL && curr_process->remain_time!=0 && curr_process->load_time!=0){
             /*continue dealing with load time*/
             curr_process->load_time--;  
-        }else if(curr_process!=NULL && curr_process->remain_time!=0 && curr_process->quantum!=0 && curr_process->load_time==0){
+        }else if(curr_process!=NULL && curr_process->remain_time!=0  && curr_process->load_time==0){
             /*continue dealing with current process*/
-            curr_process->remain_time--;  
-            curr_process->quantum--;  
+            curr_process->remain_time--;   
         }else{
             //this is not the first process, then we need to finish the current process
             if(curr_process!=NULL){
@@ -937,7 +936,7 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, long long
                                                                             curr_process->memory_size_req,
                                                                             curr_process->job_time, 
                                                                             curr_process->remain_time,
-                                                                            quantum, 0, 
+                                                                            0, 0, 
                                                                             curr_process->page_num, 
                                                                             curr_process->take_up_page, 
                                                                             simulator_timer, 
@@ -1107,7 +1106,6 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, long long
                 print_take_up_page(curr_process->take_up_page, curr_process->page_num);
                 if(curr_process->load_time==0){
                     curr_process->remain_time--; 
-                    curr_process->quantum--; 
                 }else{
                     curr_process->load_time--; 
                 }
@@ -1579,10 +1577,10 @@ find_none_empty_space(long long int* pages,long long int num_of_page){
 
 void 
 apply_shortest_job(list_t *to_do_list){
+    printf("I runned here\n");
     /*insert the node with shortest remain time to the head of the list */
     //OK, let's find out the the one with the shortest remain time 
     node_t *shortest_process = find_shortest_job(to_do_list);
-    assert(shortest_process!=NULL);
     //as the process we already found, let's insert the node at the head of the list 
     // make it load time as 0, because it has already being loaded inside the ram
     if(shortest_process==to_do_list->head){
