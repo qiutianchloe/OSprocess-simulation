@@ -1025,7 +1025,6 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, long long
                     long long int num_of_page_remove_this_round=0;           
                     while(assigned_page<min_require){
                         node_t *least_rec_pro = find_least_rec_pro_for_v(to_do_list);
-                        
                         printf("----------------------------------------------------------------------------------------\n");
                         printf("time at:%lld \n", simulator_timer);
                         print_list(to_do_list);
@@ -1583,25 +1582,29 @@ apply_shortest_job(list_t *to_do_list){
     /*insert the node with shortest remain time to the head of the list */
     //OK, let's find out the the one with the shortest remain time 
     node_t *shortest_process = find_shortest_job(to_do_list);
+    assert(shortest_process!=NULL);
     //as the process we already found, let's insert the node at the head of the list 
     // make it load time as 0, because it has already being loaded inside the ram
-    node_t *new_position = create_a_node(shortest_process->time_arrived, 
-                                                            shortest_process->process_id,
-                                                            shortest_process->memory_size_req,
-                                                            shortest_process->job_time, 
-                                                            shortest_process->remain_time,
-                                                            shortest_process->quantum, 
-                                                            shortest_process->load_time, 
-                                                            shortest_process->page_num, 
-                                                            shortest_process->take_up_page, 
-                                                            shortest_process->last_stop_time, 
-                                                            shortest_process->allocated_page, 
-                                                            shortest_process->frequency);
-    //1. delete it from the head of the list
-    delete_a_node(to_do_list,shortest_process->process_id);
-    //4. insert at the end of the 
-    to_do_list = insert_at_head(to_do_list, new_position);
-
+    if(shortest_process==to_do_list->head){
+        //do nothing, cause it has already beed there
+    }else{
+        node_t *new_position = create_a_node(shortest_process->time_arrived, 
+                                                                shortest_process->process_id,
+                                                                shortest_process->memory_size_req,
+                                                                shortest_process->job_time, 
+                                                                shortest_process->remain_time,
+                                                                shortest_process->quantum, 
+                                                                shortest_process->load_time, 
+                                                                shortest_process->page_num, 
+                                                                shortest_process->take_up_page, 
+                                                                shortest_process->last_stop_time, 
+                                                                shortest_process->allocated_page, 
+                                                                shortest_process->frequency);
+        //1. delete it from the head of the list
+        delete_a_node(to_do_list,shortest_process->process_id);
+        //4. insert at the end of the 
+        to_do_list = insert_at_head(to_do_list, new_position);
+    }
 }
 
 node_t *
