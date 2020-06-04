@@ -88,7 +88,6 @@ long long int get_weight(list_t *list);
 void delete_a_node(list_t *list, long long int del_process_id); 
 void print_list(list_t *list);
 long long int length_of_list(list_t *list);
-char* itoa(int num,char* str,int radix);
 void print_take_up_page(long long int* take_up_page, long long int num_of_page);
 
 sta_t *create_sta_node(long long int time_arrived, long long int process_id, long long int job_time, long long int time_complete, long long int interval);
@@ -344,9 +343,9 @@ run_p_on_ff_algorithm(list_t *process_input, long long int memory_size, statisti
                 remain_page = remain_page+curr_process->page_num;
                 printf("%lld, EVICTED, mem-addresses=", simulator_timer);
                 print_take_up_page(curr_process->take_up_page, curr_process->page_num);
-                int i=0; 
+                long long int i=0; 
                 for(i=0; i<curr_process->page_num; i++){
-                    int assign_page=curr_process->take_up_page[i];
+                    long long int assign_page=curr_process->take_up_page[i];
                     ram[assign_page] = -1;
                 }
                 printf("%lld, FINISHED, id=%lld, proc-remaining=%lld\n", simulator_timer,curr_process->process_id, num_processes_arrived);
@@ -366,7 +365,7 @@ run_p_on_ff_algorithm(list_t *process_input, long long int memory_size, statisti
                 long long int page_need= curr_process->page_num;
                 int memory_take_up_per;
                 if(remain_page>=page_need){
-                    int i=0; 
+                    long long int i=0; 
                     for(i=0; i<page_need; i++){
                         long long int assign_page=empyt_space_start+i;
                         curr_process->take_up_page[i]=assign_page;
@@ -452,9 +451,9 @@ run_p_on_rr_algorithm(list_t *process_input,long long int memory_size, long long
                     empyt_space_start = curr_process->take_up_page[0];
                     printf("%lld, EVICTED, mem-addresses=", simulator_timer);
                     print_take_up_page(curr_process->take_up_page, curr_process->page_num);
-                    int i=0; 
+                    long long int i=0; 
                     for(i=0; i<curr_process->page_num; i++){
-                        int assign_page=curr_process->take_up_page[i];
+                        long long int assign_page=curr_process->take_up_page[i];
                         ram[assign_page] = -1;
                     }
                     num_processes_arrived--;
@@ -909,7 +908,7 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, long long
             if(curr_process!=NULL){
                 //this process has already finished
                 if(curr_process->remain_time==0){
-                    //printf("This is the finish part\n");
+                    printf("This is the finish part\n");
                     remain_page = remain_page+curr_process->allocated_page;
                     //doesn't change this part
                     empyt_space_start = curr_process->take_up_page[0];
@@ -1026,7 +1025,7 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, long long
                     long long int num_of_page_remove_this_round=0;           
                     while(assigned_page<min_require){
                         node_t *least_rec_pro = find_least_rec_pro_for_v(to_do_list);
-                        /*
+                        
                         printf("----------------------------------------------------------------------------------------\n");
                         printf("time at:%lld \n", simulator_timer);
                         print_list(to_do_list);
@@ -1036,13 +1035,13 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, long long
                         print_take_up_page(least_rec_pro->take_up_page, least_rec_pro->page_num);
                         printf("its process that need to sign's page allocation situation is like this:");
                         print_take_up_page(curr_process->take_up_page, curr_process->page_num);
-                        */
+                        
                         long long int num_of_ass = 0; 
                         long long int require_now = min_require-assigned_page;
-                        /*printf("the min_require is %lld\n", min_require);
+                        printf("the min_require is %lld\n", min_require);
                         printf("the assigned page value now is %lld\n", assigned_page);
                         printf("the page that we want the lea_rec_pro to lect is %lld\n", require_now);
-                        */
+                        
                         if(least_rec_pro->allocated_page>=require_now){
                             num_of_ass=require_now;
                         }else{
@@ -1051,10 +1050,10 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, long long
                         //printf("number of ass need to assign is %lld\n",num_of_ass);
                         long long int counter =0;
                         for(counter=0;counter<num_of_ass;counter++){
-                            //printf("counter is %lld\n",counter);
+                            printf("counter is %lld\n",counter);
                             long long int remove_page_num=find_none_empty_space(least_rec_pro->take_up_page,least_rec_pro->page_num);
                             assert(remove_page_num!=-1);
-                            //printf("the next place's ram space %lld will be converted, ", remove_page_num);
+                            printf("the next place's ram space %lld will be converted, ", remove_page_num);
                             //assign to the new process first 
                             assigned_value_to_empty_page(curr_process->take_up_page,curr_process->page_num,least_rec_pro->take_up_page[remove_page_num]);
                             curr_process->allocated_page++; 
@@ -1069,7 +1068,7 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, long long
                             least_rec_pro->load_time=least_rec_pro->load_time+2; 
                             assigned_page++;
                         }
-                        /*
+                        
                         printf("After converting:\n");
                         printf("the process %lld's page will give to %lld\n", least_rec_pro->process_id, curr_process->process_id);
                         printf("its old page allocation situation is like this:");
@@ -1081,8 +1080,8 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, long long
                         //print out the page that being ejected 
                         printf("the converted pages are:\n");
                         printf("%lld number of page is converted\n", num_of_page_remove_this_round);
-                        */
-                        //printf("----------------------------------------------------------------------------------------\n");
+                        
+                        printf("----------------------------------------------------------------------------------------\n");
                         
                     } 
                     if(num_of_page_remove_this_round>0){
@@ -1475,7 +1474,7 @@ find_least_rec_pro(list_t *to_do_list){
     if(least_rec_pro->last_stop_time==-1||least_rec_pro->load_time!=0){
         need_replace_head = True;
     }
-    int earliest_time = least_rec_pro->last_stop_time;
+    long long int earliest_time = least_rec_pro->last_stop_time;
     node_t *search_node = to_do_list->head; 
     while(search_node!=NULL){
         //printf("I was wondering whether is process 1 runed here, process_id =%lld", search_node->process_id);
@@ -1506,7 +1505,7 @@ find_least_rec_pro_for_v(list_t *to_do_list){
     if(least_rec_pro->last_stop_time==-1||least_rec_pro->allocated_page==0){
         need_replace_head = True;
     }
-    int earliest_time = least_rec_pro->last_stop_time;
+    long long int earliest_time = least_rec_pro->last_stop_time;
     node_t *search_node = to_do_list->head->next; 
     while(search_node!=NULL){
         //printf("I was wondering whether is process 1 runed here, process_id =%lld", search_node->process_id);
@@ -1537,7 +1536,7 @@ find_least_fre_pro_for_v(list_t *to_do_list){
     if(least_rec_pro->frequency==0||least_rec_pro->allocated_page==0){
         need_replace_head = True;
     }
-    int least_freq = least_rec_pro->frequency;
+    long long int least_freq = least_rec_pro->frequency;
     node_t *search_node = to_do_list->head->next; 
     while(search_node!=NULL){
         if(search_node->frequency!=0&&search_node->allocated_page>0){
@@ -1966,36 +1965,6 @@ void print_take_up_page(long long int* take_up_page, long long int num_of_page){
         printf("%lld",take_up_page[counter]);
     }
     printf("]\n");
-}
-/*copy the function from the internet*/
-char* itoa(int num,char* str,int radix){
-    char index[]="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    unsigned unum;
-    int i=0,j,k;
-    if(radix==10&&num<0)
-    {
-        unum=(unsigned)-num;
-        str[i++]='-';
-    }
-    else unum=(unsigned)num;
-    do
-    {
-        str[i++]=index[unum%(unsigned)radix];
-        unum/=radix;
- 
-    }while(unum);
-
-    str[i]='\0';
-    if(str[0]=='-') k=1;
-    else k=0;
-    char temp;
-    for(j=k;j<=(i-1)/2;j++)
-    {
-        temp=str[j];
-        str[j]=str[i-1+k-j];
-        str[i-1+k-j]=temp;
-    }
-    return str;
 }
 /*functions for the algorithm datastructure-------------------------------------------*/
 /*Functions for preformance statistics data structure---------------------------------*/
