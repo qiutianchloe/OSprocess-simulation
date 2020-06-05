@@ -861,6 +861,9 @@ run_v_on_rr_algorithm(list_t *process_input,long long int memory_size, long long
             }
         }
         simulator_timer++; 
+        // if(simulator_timer>100){
+        //     break; 
+        // }
     }
     free_list(to_do_list);
     return simulator_timer; 
@@ -1577,7 +1580,7 @@ find_none_empty_space(long long int* pages,long long int num_of_page){
 
 void 
 apply_shortest_job(list_t *to_do_list){
-    printf("I runned here\n");
+    //printf("I runned here\n");
     /*insert the node with shortest remain time to the head of the list */
     //OK, let's find out the the one with the shortest remain time 
     node_t *shortest_process = find_shortest_job(to_do_list);
