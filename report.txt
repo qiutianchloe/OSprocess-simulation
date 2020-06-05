@@ -1,3 +1,17 @@
-report first attempt
-I used the shortest job first algorithm for cs
-and used the least frequency used algorithm for cm
+In this project, 
+
+I used the shortest job first algorithm for cs.
+In SJF,the process having the smallest execution time is chosen for the next execution.
+It is helpful for batch-type processing.
+Comparing to the round robin scheduler that I choose for the benchmark.
+It reduce the overall waiting time for processes sets.
+And making sure shorter jobs are executed first and finish without wasting time on loading ,hence have a short turnaround time. 
+But when there is always new shorter processes keep comming, long job time processes will always keep wait. 
+
+I used the Most Recently Used algorithm for cm. 
+In LFU, the process with the lowest count is removed first. 
+I compare it to the vm algorithm.More detail, our vm algorithm uses the Least Recently Used. 
+In our case, all the processes executed one by one. Process A finish first, next round, A will still working at first. 
+LRU always evict the process that most likely to execute. Hence increased lots of loading time. 
+MRU works on the contract, so that decrease loading time,then have a short turnaround time
+But in reality, the least recently used page is not likely run is reasonable. So MRU will be bad. 
