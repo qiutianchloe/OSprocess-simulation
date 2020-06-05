@@ -67,7 +67,7 @@ long long int run_cm_on_rr_algorithm(list_t *process_input,long long int memory_
 long long int check_arrival(long long int simulator_timer, list_t *process_input, list_t *to_do_list, long long int num_processes_arrived);
 node_t *find_least_rec_pro(list_t *to_do_list);
 node_t *find_least_rec_pro_for_v(list_t *to_do_list);
-node_t *find_least_fre_pro_for_v(list_t *to_do_list);
+node_t *find_most_rec_pro_for_v(list_t *to_do_list);
 void assigned_value_to_empty_page(long long int* pages,long long int num_of_page,long long int value); 
 long long int find_none_empty_space(long long int* pages,long long int num_of_page); 
 void apply_shortest_job(list_t *to_do_list);
@@ -1279,7 +1279,7 @@ run_cm_on_rr_algorithm(list_t *process_input,long long int memory_size, long lon
                     assert(converted_pages_this_time!=NULL);    
                     long long int num_of_page_remove_this_round=0;            
                     while(assigned_page<min_require){
-                        node_t *least_rec_pro = find_least_fre_pro_for_v(to_do_list);
+                        node_t *least_rec_pro = find_most_rec_pro_for_v(to_do_list);
                         long long int num_of_ass = 0; 
                         long long int require_now = min_require-assigned_page;
                         if(least_rec_pro->allocated_page>=require_now){
@@ -1528,31 +1528,35 @@ find_least_rec_pro_for_v(list_t *to_do_list){
     return least_rec_pro; 
 }
 node_t *
-find_least_fre_pro_for_v(list_t *to_do_list){
-    //printf("I tried to find the least freqency one\n\n");
+find_most_rec_pro_for_v(list_t *to_do_list){
     int need_replace_head=False; 
     node_t *least_rec_pro = to_do_list->head->next; 
     //to make sure that the evicted page is loaded before, in the other word. it allocated some pages
-    if(least_rec_pro->frequency==0||least_rec_pro->allocated_page==0){
+    if(least_rec_pro->last_stop_time==-1||least_rec_pro->allocated_page==0){
         need_replace_head = True;
     }
-    long long int least_freq = least_rec_pro->frequency;
+    long long int recent_time = least_rec_pro->last_stop_time;
+
     node_t *search_node = to_do_list->head->next; 
+
     while(search_node!=NULL){
-        if(search_node->frequency!=0&&search_node->allocated_page>0){
+        //printf("I was wondering whether is process 1 runed here, process_id =%lld", search_node->process_id);
+        if(search_node->last_stop_time!=-1&&search_node->allocated_page>0){
             if(need_replace_head){
                 least_rec_pro=search_node; 
-                least_freq=search_node->frequency;
+                recent_time=search_node->last_stop_time;
                 need_replace_head=False; 
             }else{
-                if(search_node->frequency<least_freq){
+                if(search_node->last_stop_time>recent_time){
                     least_rec_pro=search_node; 
-                    least_freq=search_node->frequency;
+                    recent_time=search_node->last_stop_time;
                 }
             }
         }
         search_node=search_node->next;
     }
+    //printf("the process id: %lld\n", least_rec_pro->process_id);
+    //print_take_up_page(least_rec_pro->take_up_page, least_rec_pro->page_num);
     return least_rec_pro; 
 }
 
