@@ -58,11 +58,13 @@ void read_file_into_list(char* filename, list_t *process_input, long long int qu
 
 /*only the scheduling method*/
 long long int run_ff_algorithm(list_t *process_input,statistic_t *statistics);
+long long int run_cs_algorithm(list_t *process_input,statistic_t *statistics);
 long long int run_rr_algorithm(list_t *process_input, long long int quantum, statistic_t *statistics);
 long long int run_p_on_ff_algorithm(list_t *process_input,long long int memory_size, statistic_t *statistics);
+long long int run_p_on_cs_algorithm(list_t *process_input,long long int memory_size, statistic_t *statistics);
+long long int run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, statistic_t *statistics);
 long long int run_p_on_rr_algorithm(list_t *process_input,long long int memory_size, long long int quantum, statistic_t *statistics);
 long long int run_v_on_rr_algorithm(list_t *process_input,long long int memory_size, long long int quantum, statistic_t *statistics);
-long long int run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, statistic_t *statistics);
 long long int run_cm_on_rr_algorithm(list_t *process_input,long long int memory_size, long long int quantum, statistic_t *statistics);
 long long int check_arrival(long long int simulator_timer, list_t *process_input, list_t *to_do_list, long long int num_processes_arrived);
 node_t *find_least_rec_pro(list_t *to_do_list);
@@ -122,6 +124,10 @@ main(int argc, char *argv[]){
 
         finish_at=run_ff_algorithm(process_input,statistics);
 
+    }else if(strcmp(cmd_arg[1], "cs")==0 && strcmp(cmd_arg[2], "u")==0){
+
+        finish_at=run_cs_algorithm(process_input,statistics);
+
     }else if(strcmp(cmd_arg[1], "rr")==0 && strcmp(cmd_arg[2], "u")==0){
 
         finish_at=run_rr_algorithm(process_input, atoi(cmd_arg[4]),statistics);
@@ -129,6 +135,10 @@ main(int argc, char *argv[]){
     }else if(strcmp(cmd_arg[1], "ff")==0 && strcmp(cmd_arg[2], "p")==0){
 
         finish_at=run_p_on_ff_algorithm(process_input, atoi(cmd_arg[3]), statistics);
+
+    }else if(strcmp(cmd_arg[1], "cs")==0 && strcmp(cmd_arg[2], "p")==0){
+
+        finish_at=run_p_on_cs_algorithm(process_input, atoi(cmd_arg[3]), statistics);
 
     }else if(strcmp(cmd_arg[1], "rr")==0 && strcmp(cmd_arg[2], "p")==0){
 
@@ -150,9 +160,17 @@ main(int argc, char *argv[]){
 
         finish_at=run_cm_on_rr_algorithm(process_input,atoi(cmd_arg[3]),atoi(cmd_arg[4]),statistics);
 
+    }else if(strcmp(cmd_arg[1], "ff")==0 && strcmp(cmd_arg[2], "cm")==0){
+
+        finish_at=run_p_on_ff_algorithm(process_input, atoi(cmd_arg[3]), statistics);
+
+    }else if(strcmp(cmd_arg[1], "cs")==0 && strcmp(cmd_arg[2], "cm")==0){
+
+        finish_at=run_p_on_cs_algorithm(process_input, atoi(cmd_arg[3]), statistics);
+
     }else{
 
-        printf("Sorry, I didn't implement this function so fat\n");
+        printf("Sorry, I didn't implement this function so far\n");
         exit(0);
     }
 
@@ -200,6 +218,64 @@ run_ff_algorithm(list_t *process_input,statistic_t *statistics){
             //find the right one 
             if(!is_empty_list(to_do_list)){
                 //there are still process need to execute in to-do-list
+                curr_process = to_do_list->head;
+                printf("%lld, RUNNING, id=%lld, remaining-time=%lld\n", simulator_timer, curr_process->process_id, curr_process->remain_time);
+                curr_process->remain_time--; 
+                curr_process->frequency++; 
+            }else if(!is_empty_list(process_input)){
+                //there are still process need to execute, but they just haven't arrived yet
+                //so do nothing just wait 
+                curr_process = NULL; 
+            }else{
+                //there is nothing to do here, so break out
+                break;
+            }
+        }
+        simulator_timer++; 
+    }
+    free_list(to_do_list);
+    return simulator_timer;
+}
+
+long long int 
+run_cs_algorithm(list_t *process_input,statistic_t *statistics){
+    long long int interval = 0; 
+    long long int simulator_timer = 0; 
+
+    //information about the arriving job  
+    long long int num_processes_arrived = 0; 
+    list_t *to_do_list = make_empty_list(); 
+
+    node_t *curr_process=NULL; 
+
+    while(!is_empty_list(process_input)){
+        //set the interval for statisics
+        if((simulator_timer-1)%60==0&&simulator_timer!=1&&simulator_timer!=0){
+            interval++; 
+        }
+        /*accept the arriving process*/
+        num_processes_arrived = check_arrival(simulator_timer, process_input, to_do_list, num_processes_arrived);
+
+        /*executing the process*/
+        if(curr_process!=NULL && curr_process->remain_time!=0){
+            /*continue dealing with current process*/
+            curr_process->remain_time--;  
+        }else{
+            if(curr_process!=NULL){
+                /*this process has already finished*/
+                num_processes_arrived--;
+                printf("%lld, FINISHED, id=%lld, proc-remaining=%lld\n", simulator_timer,curr_process->process_id, num_processes_arrived);
+                //record the statistics; 
+                sta_t *this_process = create_sta_node(curr_process->time_arrived, curr_process->process_id, curr_process->job_time, simulator_timer,interval);
+                statistics = insert_a_sta(statistics, this_process);
+                delete_a_node(process_input,curr_process->process_id);
+                delete_a_node(to_do_list,curr_process->process_id);
+            }
+            /*execute the next process*/
+            //find the right one 
+            if(!is_empty_list(to_do_list)){
+                //there are still process need to execute in to-do-list
+                apply_shortest_job(to_do_list);
                 curr_process = to_do_list->head;
                 printf("%lld, RUNNING, id=%lld, remaining-time=%lld\n", simulator_timer, curr_process->process_id, curr_process->remain_time);
                 curr_process->remain_time--; 
@@ -401,8 +477,114 @@ run_p_on_ff_algorithm(list_t *process_input, long long int memory_size, statisti
 }
 
 long long int 
-run_p_on_rr_algorithm(list_t *process_input,long long int memory_size, long long int quantum, statistic_t *statistics){
+run_p_on_cs_algorithm(list_t *process_input,long long int memory_size, statistic_t *statistics){
     long long int interval = 0; 
+    long long int simulator_timer = 0; 
+    //remain page also equal total memory page minus empty_space_start. 
+    //or total memory=empty_space_start+remain_page
+    long long int memory_page = memory_size/4; //const
+    long long int ram[MAX]; 
+    long long int remain_page = memory_page; 
+    long long int empyt_space_start = 0; 
+
+    // initialize the all the memory page as -1
+    long long int counter=0; 
+    for(counter = 0; counter<MAX; counter++){
+        ram[counter] = -1;  
+    }
+
+    //information about the arriving job  
+    long long int num_processes_arrived = 0; 
+    list_t *to_do_list = make_empty_list(); 
+
+    node_t *curr_process=NULL; 
+
+    while(!is_empty_list(process_input)){
+        //set the interval for statisics
+        if((simulator_timer-1)%60==0&&simulator_timer!=1&&simulator_timer!=0){
+            interval++; 
+        }
+        /*accept the arriving process*/
+        num_processes_arrived = check_arrival(simulator_timer, process_input, to_do_list, num_processes_arrived);
+
+        /*executing the process*/
+        if(curr_process!=NULL && curr_process->remain_time!=0 && curr_process->load_time!=0){
+            /*continue dealing with load time*/
+            curr_process->load_time--;  
+        }else if(curr_process!=NULL && curr_process->remain_time!=0 && curr_process->load_time==0){
+            /*continue dealing with current process*/
+            curr_process->remain_time--;  
+        }else{
+            //FINISH A PROGRESS
+            if(curr_process!=NULL){
+                /*this process has already finished*/
+                num_processes_arrived--;
+                empyt_space_start = curr_process->take_up_page[0]; 
+                remain_page = remain_page+curr_process->page_num;
+                printf("%lld, EVICTED, mem-addresses=", simulator_timer);
+                print_take_up_page(curr_process->take_up_page, curr_process->page_num);
+                long long int i=0; 
+                for(i=0; i<curr_process->page_num; i++){
+                    long long int assign_page=curr_process->take_up_page[i];
+                    ram[assign_page] = -1;
+                }
+                printf("%lld, FINISHED, id=%lld, proc-remaining=%lld\n", simulator_timer,curr_process->process_id, num_processes_arrived);
+                //record the statistics; 
+                sta_t *this_process = create_sta_node(curr_process->time_arrived, curr_process->process_id, curr_process->job_time, simulator_timer,interval);
+                statistics = insert_a_sta(statistics, this_process);
+                delete_a_node(process_input,curr_process->process_id);
+                delete_a_node(to_do_list,curr_process->process_id);
+            }
+            /*START A NEW PROGRASS*/
+            if(!is_empty_list(to_do_list)){
+                //there are still process need to execute in to-do-list
+                //choose a process to do.
+                apply_shortest_job(to_do_list);
+                curr_process = to_do_list->head;
+                //assign the memory to process
+                //There must be enough space for p mode, so we just assign the space to the process directly
+                long long int page_need= curr_process->page_num;
+                int memory_take_up_per;
+                if(remain_page>=page_need){
+                    long long int i=0; 
+                    for(i=0; i<page_need; i++){
+                        long long int assign_page=empyt_space_start+i;
+                        curr_process->take_up_page[i]=assign_page;
+                        ram[assign_page] = curr_process->process_id;
+                    }
+                    //change the empty_space_start
+                    empyt_space_start = empyt_space_start+page_need; 
+                    remain_page = remain_page-page_need; 
+                    //calculate the memory take up percentage
+                    //memory_take_up_per = ((double)page_need/memory_page)*100; 
+                    memory_take_up_per = ceil(((double)(memory_page-remain_page)/memory_page)*100); //this is (2)
+                }else{
+                    printf("Even the memory is empty, there is still no space for the process, try other input!\n");
+                    exit(0);
+                } 
+
+                printf("%lld, RUNNING, id=%lld, remaining-time=%lld, load-time=%lld, mem-usage=%d%%, mem-addresses=", simulator_timer, curr_process->process_id, curr_process->remain_time, curr_process->load_time,memory_take_up_per);
+                print_take_up_page(curr_process->take_up_page, curr_process->page_num);
+                curr_process->load_time--; 
+                curr_process->frequency++; 
+            }else if(!is_empty_list(process_input)){
+                //there are still process need to execute, but they just haven't arrived yet
+                //so do nothing just wait 
+                curr_process = NULL; 
+            }else{
+                //there is nothing to do here, so break out
+                break;
+            }
+        }
+        simulator_timer++; 
+    }
+    free_list(to_do_list);
+    return simulator_timer;
+}
+
+long long int 
+run_p_on_rr_algorithm(list_t *process_input,long long int memory_size, long long int quantum, statistic_t *statistics){
+     long long int interval = 0; 
     long long int simulator_timer = 0; 
     //remain page also equal total memory page minus empty_space_start. 
     //or total memory=empty_space_start+remain_page
@@ -843,6 +1025,7 @@ run_v_on_rr_algorithm(list_t *process_input,long long int memory_size, long long
                 curr_process->load_time=new_load_time;
                 curr_process->frequency++; 
                 qsort(curr_process->take_up_page, curr_process->page_num, sizeof(long long int), comp);
+
                 printf("%lld, RUNNING, id=%lld, remaining-time=%lld, load-time=%lld, mem-usage=%d%%, mem-addresses=", simulator_timer, curr_process->process_id, curr_process->remain_time, curr_process->load_time, memory_take_up_per);
                 print_take_up_page(curr_process->take_up_page, curr_process->page_num);
                 if(curr_process->load_time==0){
@@ -1027,6 +1210,7 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, statistic
                     long long int num_of_page_remove_this_round=0;           
                     while(assigned_page<min_require){
                         node_t *least_rec_pro = find_least_rec_pro_for_v(to_do_list);
+                        /*
                         printf("----------------------------------------------------------------------------------------\n");
                         printf("time at:%lld \n", simulator_timer);
                         print_list(to_do_list);
@@ -1036,13 +1220,14 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, statistic
                         print_take_up_page(least_rec_pro->take_up_page, least_rec_pro->page_num);
                         printf("its process that need to sign's page allocation situation is like this:");
                         print_take_up_page(curr_process->take_up_page, curr_process->page_num);
-                        
+                        */
                         long long int num_of_ass = 0; 
                         long long int require_now = min_require-assigned_page;
+                        /*
                         printf("the min_require is %lld\n", min_require);
                         printf("the assigned page value now is %lld\n", assigned_page);
                         printf("the page that we want the lea_rec_pro to lect is %lld\n", require_now);
-                        
+                        */
                         if(least_rec_pro->allocated_page>=require_now){
                             num_of_ass=require_now;
                         }else{
@@ -1069,7 +1254,7 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, statistic
                             least_rec_pro->load_time=least_rec_pro->load_time+2; 
                             assigned_page++;
                         }
-                        
+                        /*
                         printf("After converting:\n");
                         printf("the process %lld's page will give to %lld\n", least_rec_pro->process_id, curr_process->process_id);
                         printf("its old page allocation situation is like this:");
@@ -1083,7 +1268,7 @@ run_v_on_cs_algorithm(list_t *process_input,long long int memory_size, statistic
                         printf("%lld number of page is converted\n", num_of_page_remove_this_round);
                         
                         printf("----------------------------------------------------------------------------------------\n");
-                        
+                        */
                     } 
                     if(num_of_page_remove_this_round>0){
                         printf("%lld, EVICTED, mem-addresses=", simulator_timer);
