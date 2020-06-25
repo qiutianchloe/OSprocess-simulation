@@ -624,12 +624,13 @@ run_p_on_rr_algorithm(list_t *process_input,long long int memory_size, long long
         }else{
             //this is not the first process, then we need to finish the current process first
             if(curr_process!=NULL){
+                printf("this is the only place");
                 //printf("current process %lld need to finish\n", curr_process->process_id);
                 //printf("another round assignment happened at %lld time", simulator_timer);
                 //this process has already finished
                 if(curr_process->remain_time==0){
                     remain_page = remain_page+curr_process->page_num;
-                    empyt_space_start = curr_process->take_up_page[0];
+                    empyt_space_start = curr_process->take_up_page[0]; 
                     printf("%lld, EVICTED, mem-addresses=", simulator_timer);
                     print_take_up_page(curr_process->take_up_page, curr_process->page_num);
                     long long int i=0; 
@@ -725,6 +726,7 @@ run_p_on_rr_algorithm(list_t *process_input,long long int memory_size, long long
                     remain_page = 0; 
                     //then we need to start evict some other loaded processes. 
                     while(found_page<page_need){
+                        printf("I run here\n\n");
                         //printf("I sucked here last night to find new space for the new processes\n");
                         //OK, start the find the process 
                         node_t *least_rec_pro = find_least_rec_pro(to_do_list);
